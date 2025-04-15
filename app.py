@@ -23,7 +23,7 @@ def generate_local_summary(content):
         'sell your data', 'store your data'
     ]
 
-    header_like = re.compile(r'^[a-z\s]{3,30}$')  # Skip short lowercase headers
+    header_like = re.compile(r'^[a-z\s]{3,30}$')  # Skip header-like short lowercase lines
 
     for sentence in sentences:
         sentence = sentence.strip()
@@ -112,4 +112,45 @@ def verify():
                 break
 
         if opt_out_instructions and len(opt_out_instructions) < 50:
-            opt_out_instructions = "Opt-out instructions were mentioned,
+            opt_out_instructions = "Opt-out instructions were mentioned, but no clear steps were found. Look for an account settings page or privacy settings on the site."
+
+        if keyword_mentions < 10:
+            traffic_light = "🟢 Low Data Collection Risk"
+        elif keyword_mentions < 30:
+            traffic_light = "🟡 Moderate Data Collection Risk"
+        else:
+            traffic_light = "🔴 High Data Collection / Tracking Detected"
+
+        output = f"""
+<h2>{traffic_light}</h2>
+
+<h3>🔍 Summary of Detected Practices:</h3>
+<ul>
+"""
+
+        for finding in findings:
+            output += f"<li>{finding}</li>\n"
+
+        output += "</ul>"
+
+        if opt_out_instructions:
+            output += f"""
+<h3>🔓 Opt-Out Instructions:</h3>
+<p>{opt_out_instructions}</p>
+"""
+
+        if advanced:
+            output += generate_local_summary(content)
+
+        output += f"""
+<p><strong>Total privacy-related keywords found:</strong> {keyword_mentions}</p>
+"""
+
+        return jsonify({"result": output})
+
+    except Exception as e:
+        return jsonify({"result": f"❌ Error: {str(e)}"}), 500
+
+
+if __name__ == '__main__':
+    app.run()
