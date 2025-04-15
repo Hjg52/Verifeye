@@ -11,23 +11,23 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return send_file('index.html')  # since it's in the same directory
+    return send_file('index.html')
 
 @app.route('/verify', methods=['POST'])
 def verify():
-    data = request.get_json()
+    data = request.get_json(force=True)
     url = data.get('url')
     advanced = data.get('advanced', False)
 
     if not url:
-        return "❌ No URL provided.", 400
+        return jsonify({"result": "❌ No URL provided."}), 400
 
     try:
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
         if not any(keyword in content for keyword in ['privacy', 'gdpr', 'data collection', 'cookie', 'personal information']):
-            return "⚠️ This doesn't appear to be a privacy policy page. Please check the URL."
+            return jsonify({"result": "⚠️ This doesn't appear to be a privacy policy page. Please check the URL."})
 
         if advanced:
             prompt = f"""
@@ -55,10 +55,10 @@ def verify():
 
         result_text = completion.choices[0].message.content.strip()
 
-        return result_text
+        return jsonify({"result": result_text})
 
     except Exception as e:
-        return f"❌ Error processing request: {str(e)}", 500
+        return jsonify({"result": f"❌ Error processing request: {str(e)}"}), 500
 
 
 if __name__ == '__main__':
