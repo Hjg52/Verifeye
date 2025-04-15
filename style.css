@@ -100,6 +100,7 @@ button:hover {
     line-height: 1.6;
     text-align: left;
     overflow-wrap: break-word;
+    display: none; /* Hidden until result appears */
 }
 
 .result-box h2 {
