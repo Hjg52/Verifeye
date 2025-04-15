@@ -24,42 +24,54 @@ def verify():
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
+        # Keywords for traffic light system
         keywords = [
             'privacy', 'gdpr', 'data collection', 'third-party',
             'cookies', 'tracking', 'opt-out', 'personal information',
             'data sharing', 'location', 'data retention', 'user data'
         ]
 
-        found_keywords = []
-        total_mentions = 0
-
+        keyword_mentions = 0
         for word in keywords:
-            count = len(re.findall(word, content))
-            if count > 0:
-                found_keywords.append((word, count))
-                total_mentions += count
+            keyword_mentions += len(re.findall(word, content))
 
-        if not found_keywords:
-            return jsonify({"result": "⚠️ This doesn't appear to be a privacy policy page or contains very few privacy-related terms."})
+        # Rule-based findings
+        findings = []
 
-        found_keywords.sort(key=lambda x: x[1], reverse=True)
+        if re.search(r'share.*data.*with', content):
+            findings.append("⚠️ This site may share your data with third parties.")
 
-        # Generate readable summary
-        summary = "🔍 Analysis Result:\n\n"
+        if re.search(r'retain data for|store data for|keep.*data for', content):
+            findings.append("🗄️ This site discusses how long your data is stored.")
 
-        for word, count in found_keywords:
-            summary += f"- The term '{word}' appears {count} time(s).\n"
+        if re.search(r'you can opt out|opt-out|opt out', content):
+            findings.append("🔓 There are options for users to opt-out or control data sharing.")
 
-        if total_mentions < 10:
+        if re.search(r'track.*location|location data', content):
+            findings.append("📍 This site may track your location.")
+
+        if re.search(r'cookies|tracking', content):
+            findings.append("🍪 This site uses cookies or tracking technologies.")
+
+        if not findings:
+            findings.append("ℹ️ No specific privacy practices detected, but keywords related to privacy were found.")
+
+        # Traffic Light System
+        if keyword_mentions < 10:
             traffic_light = "🟢 Low Data Collection Risk"
-        elif total_mentions < 30:
+        elif keyword_mentions < 30:
             traffic_light = "🟡 Moderate Data Collection Risk"
         else:
             traffic_light = "🔴 High Data Collection / Tracking Detected"
 
-        final_output = f"{traffic_light}\n\nThis site mentions key privacy-related terms a total of {total_mentions} time(s).\n\n{summary}"
+        output = f"{traffic_light}\n\nSummary of Detected Practices:\n\n"
 
-        return jsonify({"result": final_output})
+        for finding in findings:
+            output += f"- {finding}\n"
+
+        output += f"\n(Detected {keyword_mentions} privacy-related term(s) overall for context.)"
+
+        return jsonify({"result": output})
 
     except Exception as e:
         return jsonify({"result": f"❌ Error: {str(e)}"}), 500
