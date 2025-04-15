@@ -1,4 +1,3 @@
-/* Global Reset */
 * {
     margin: 0;
     padding: 0;
@@ -13,9 +12,9 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    flex-direction: column;
 }
 
-/* Container for your content */
 .container {
     background-color: #161b22;
     padding: 2rem;
@@ -26,14 +25,12 @@ body {
     text-align: center;
 }
 
-/* Headings */
 h1 {
     margin-bottom: 1rem;
     color: #58a6ff;
 }
 
-/* Inputs */
-input[type="text"], input[type="password"] {
+input[type="text"] {
     width: 100%;
     padding: 0.75rem;
     margin-bottom: 1rem;
@@ -44,7 +41,6 @@ input[type="text"], input[type="password"] {
     border: 1px solid #30363d;
 }
 
-/* Buttons */
 button {
     width: 100%;
     padding: 0.75rem;
@@ -76,6 +72,7 @@ button:hover {
 .advanced-toggle input[type="checkbox"] {
     margin-right: 6px;
 }
+
 .result-box {
     max-width: 600px;
     margin: 2rem auto;
@@ -85,5 +82,5 @@ button:hover {
     box-shadow: 0 0 10px rgba(0,0,0,0.4);
     color: #c9d1d9;
     line-height: 1.6;
+    text-align: left;
 }
-
