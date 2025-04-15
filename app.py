@@ -56,21 +56,28 @@ def verify():
         if not findings:
             findings.append("ℹ️ No specific privacy practices detected, but some privacy-related terms were found.")
 
-        # Try to extract opt-out instructions
+        # Improved Opt-Out Detection
         opt_out_instructions = None
         opt_out_patterns = [
-            r'you can opt out.*?\.',
-            r'to opt[- ]?out.*?\.',
-            r'to disable.*?\.',
-            r'opt[- ]?out by.*?\.',
-            r'to manage your preferences.*?\.'
+            r'(you can opt out.*?\.{1,3})',
+            r'(to opt[- ]?out.*?\.{1,3})',
+            r'(to disable.*?\.{1,3})',
+            r'(opt[- ]?out by.*?\.{1,3})',
+            r'(to manage your preferences.*?\.{1,3})'
         ]
 
         for pattern in opt_out_patterns:
             match = re.search(pattern, content)
             if match:
-                opt_out_instructions = match.group(0).strip()
+                # Grab 200 chars around the match for more context
+                start = max(match.start() - 100, 0)
+                end = min(match.end() + 100, len(content))
+                opt_out_instructions = content[start:end].strip()
                 break
+
+        # Clean fallback if too vague
+        if opt_out_instructions and len(opt_out_instructions) < 50:
+            opt_out_instructions = "Opt-out instructions were mentioned, but no clear steps were found. Look for an account settings page or privacy settings on the site."
 
         # Traffic Light System
         if keyword_mentions < 10:
