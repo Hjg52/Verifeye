@@ -84,6 +84,7 @@ button:hover {
     line-height: 1.6;
     text-align: left;
 }
+
 .result-box h2 {
     font-size: 1.4rem;
     margin-bottom: 0.5rem;
@@ -105,3 +106,7 @@ button:hover {
     line-height: 1.5;
 }
 
+.result-box p {
+    margin-top: 0.5rem;
+    line-height: 1.6;
+}
