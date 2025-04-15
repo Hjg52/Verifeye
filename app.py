@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return send_file('index.html')
+    return send_file('index.html')  # since it's in the same directory
 
 @app.route('/verify', methods=['POST'])
 def verify():
@@ -62,4 +62,4 @@ def verify():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
