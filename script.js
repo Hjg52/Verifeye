@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.querySelector('form');
-    const resultBox = document.createElement('div');
-    resultBox.className = 'result-box';
-    document.body.appendChild(resultBox);
+    const form = document.getElementById('verify-form');
+    const resultBox = document.querySelector('.result-box');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -14,16 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch('/verify', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ url, advanced })
-});
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url, advanced })
+            });
 
-
-            const result = await response.text();
-            resultBox.innerHTML = result;
+            const data = await response.json();
+            resultBox.innerHTML = data.result;
         } catch (error) {
             resultBox.innerHTML = "❌ Error fetching analysis. Please try again.";
             console.error(error);
