@@ -59,3 +59,20 @@ button {
 button:hover {
     background-color: #2ea043;
 }
+
+.advanced-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #161b22;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.advanced-toggle input[type="checkbox"] {
+    margin-right: 6px;
+}
