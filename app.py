@@ -5,9 +5,11 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-openai.api_key = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
+
+# Use the updated OpenAI client (v1.x+)
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route('/')
 def home():
@@ -44,7 +46,7 @@ def verify():
             - User controls
             """
 
-        completion = openai.ChatCompletion.create(
+        completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a privacy policy analysis assistant."},
