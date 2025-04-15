@@ -84,3 +84,24 @@ button:hover {
     line-height: 1.6;
     text-align: left;
 }
+.result-box h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.result-box h3 {
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.3rem;
+}
+
+.result-box ul {
+    padding-left: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.result-box li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
