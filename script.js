@@ -14,12 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch('/verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url, advanced })
-            });
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ url, advanced })
+});
+
 
             const result = await response.text();
             resultBox.innerHTML = result;
