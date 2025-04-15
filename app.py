@@ -23,11 +23,22 @@ def generate_local_summary(content):
         'sell your data', 'store your data'
     ]
 
+    header_like = re.compile(r'^[a-z\s]{3,30}$')  # Looks like lowercase section header
+
     for sentence in sentences:
+        sentence = sentence.strip()
+
+        # Skip empty or header-like short phrases (e.g. "use of cookies")
+        if header_like.match(sentence) and not sentence.endswith('.'):
+            continue
+
         if any(keyword in sentence for keyword in keywords):
-            clean_sentence = sentence.strip()
-            if clean_sentence.endswith(('.', '!', '?')) and 30 < len(clean_sentence) < 300:
-                important_sentences.append(clean_sentence)
+            if sentence.endswith(('.', '!', '?')) and 30 < len(sentence) < 300:
+                # Capitalize first letter & ensure it ends with a period
+                sentence = sentence[0].upper() + sentence[1:]
+                if not sentence.endswith('.'):
+                    sentence += '.'
+                important_sentences.append(sentence)
 
         if len(important_sentences) >= 5:
             break
@@ -37,13 +48,11 @@ def generate_local_summary(content):
 
     summary = "<h3>📝 Summary of Policy:</h3><ul>"
     for s in important_sentences:
-        s = s[0].upper() + s[1:]  # Capitalize first letter
-        if not s.endswith('.'):
-            s += '.'
         summary += f"<li>{s}</li>\n"
     summary += "</ul>"
 
     return summary
+
 
 @app.route('/verify', methods=['POST'])
 def verify():
