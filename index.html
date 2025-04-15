@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Privacy Policy Checker</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifeye</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="glass">
-      <h1>Privacy Policy Checker</h1>
-      <input type="text" id="urlInput" placeholder="Enter privacy policy URL..." />
-      <button onclick="checkPrivacy()">Check</button>
-      <div class="results" id="results">
-        <!-- Summary + score will appear here -->
-      </div>
+
+    <div class="container">
+        <h1>Verifeye</h1>
+        <form method="POST" action="/verify">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Verify</button>
+        </form>
     </div>
-  </div>
-  <script src="script.js"></script>
+
 </body>
 </html>
