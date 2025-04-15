@@ -5,10 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const url = form.querySelector('input[name="username"]').value;
+        let url = form.querySelector('input[name="username"]').value.trim();
         const advanced = document.getElementById('advanced-toggle-checkbox').checked;
 
-        resultBox.style.display = "block"; // Show result box on submit
+        // Auto-prepend https:// if missing
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+        }
+
+        resultBox.style.display = "block";
         resultBox.innerHTML = "🔍 Analyzing... Please wait.";
 
         try {
