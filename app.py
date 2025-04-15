@@ -12,6 +12,36 @@ def home():
 def static_files(path):
     return send_from_directory('.', path)
 
+def generate_local_summary(content):
+    important_sentences = []
+    sentences = re.split(r'(?<=[.!?])\s+', content)
+
+    keywords = [
+        'data collection', 'third-party', 'cookies', 'tracking',
+        'opt-out', 'personal information', 'location', 'retention',
+        'share your data', 'we collect', 'we use', 'delete your data',
+        'sell your data', 'store your data'
+    ]
+
+    for sentence in sentences:
+        if any(keyword in sentence for keyword in keywords):
+            clean_sentence = sentence.strip()
+            if 30 < len(clean_sentence) < 300:
+                important_sentences.append(clean_sentence)
+
+        if len(important_sentences) >= 5:
+            break
+
+    if not important_sentences:
+        return "No clear summary could be generated from this page."
+
+    summary = "<h3>📝 Summary of Policy:</h3><ul>"
+    for s in important_sentences:
+        summary += f"<li>{s}</li>\n"
+    summary += "</ul>"
+
+    return summary
+
 @app.route('/verify', methods=['POST'])
 def verify():
     data = request.get_json(force=True)
@@ -24,16 +54,14 @@ def verify():
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
-        # Keywords for traffic light scoring
+        # Traffic Light Keywords
         keywords = [
             'privacy', 'gdpr', 'data collection', 'third-party',
             'cookies', 'tracking', 'opt-out', 'personal information',
             'data sharing', 'location', 'data retention', 'user data'
         ]
 
-        keyword_mentions = 0
-        for word in keywords:
-            keyword_mentions += len(re.findall(word, content))
+        keyword_mentions = sum(len(re.findall(word, content)) for word in keywords)
 
         # Rule-based findings
         findings = []
@@ -56,7 +84,7 @@ def verify():
         if not findings:
             findings.append("ℹ️ No specific privacy practices detected, but some privacy-related terms were found.")
 
-        # Improved Opt-Out Detection
+        # Opt-Out Instructions Detection
         opt_out_instructions = None
         opt_out_patterns = [
             r'(you can opt out.*?\.{1,3})',
@@ -69,17 +97,15 @@ def verify():
         for pattern in opt_out_patterns:
             match = re.search(pattern, content)
             if match:
-                # Grab 200 chars around the match for more context
                 start = max(match.start() - 100, 0)
                 end = min(match.end() + 100, len(content))
                 opt_out_instructions = content[start:end].strip()
                 break
 
-        # Clean fallback if too vague
         if opt_out_instructions and len(opt_out_instructions) < 50:
             opt_out_instructions = "Opt-out instructions were mentioned, but no clear steps were found. Look for an account settings page or privacy settings on the site."
 
-        # Traffic Light System
+        # Traffic Light Scoring
         if keyword_mentions < 10:
             traffic_light = "🟢 Low Data Collection Risk"
         elif keyword_mentions < 30:
@@ -87,7 +113,6 @@ def verify():
         else:
             traffic_light = "🔴 High Data Collection / Tracking Detected"
 
-        # Build HTML output
         output = f"""
 <h2>{traffic_light}</h2>
 
@@ -105,6 +130,9 @@ def verify():
 <h3>🔓 Opt-Out Instructions:</h3>
 <p>{opt_out_instructions}</p>
 """
+
+        # Add Policy Summary
+        output += generate_local_summary(content)
 
         output += f"""
 <p><strong>Total privacy-related keywords found:</strong> {keyword_mentions}</p>
