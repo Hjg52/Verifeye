@@ -1,32 +1,31 @@
-async function checkPrivacy() {
-  const url = document.getElementById('urlInput').value;
-  const resultsDiv = document.getElementById('results');
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    const resultBox = document.createElement('div');
+    resultBox.className = 'result-box';
+    document.body.appendChild(resultBox);
 
-  if (!url) {
-    resultsDiv.innerHTML = "<p>Please enter a URL.</p>";
-    return;
-  }
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-  resultsDiv.innerHTML = "<p>Analyzing...</p>";
+        const url = form.querySelector('input[name="username"]').value;
+        const advanced = document.getElementById('advanced-toggle-checkbox').checked;
 
-  // Placeholder - this should call a real backend API
-  const response = await fakeAnalyze(url);
+        resultBox.innerHTML = "🔍 Analyzing... Please wait.";
 
-  resultsDiv.innerHTML = `
-    <h3>Summary</h3>
-    <p>${response.summary}</p>
-    <h3>Score: <span style="color:${response.score > 7 ? 'lightgreen' : 'orange'}">${response.score}/10</span></h3>
-  `;
-}
+        try {
+            const response = await fetch('/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url, advanced })
+            });
 
-async function fakeAnalyze(url) {
-  // Simulating a delay and response
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        summary: `This privacy policy mentions data collection, cookies, and third-party sharing. It lacks clear opt-out options and does not mention data encryption.`,
-        score: 5
-      });
-    }, 2000);
-  });
-}
+            const result = await response.text();
+            resultBox.innerHTML = result;
+        } catch (error) {
+            resultBox.innerHTML = "❌ Error fetching analysis. Please try again.";
+            console.error(error);
+        }
+    });
+});
