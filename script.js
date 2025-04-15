@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = form.querySelector('input[name="username"]').value;
         const advanced = document.getElementById('advanced-toggle-checkbox').checked;
 
+        resultBox.style.display = "block"; // Show result box on submit
         resultBox.innerHTML = "🔍 Analyzing... Please wait.";
 
         try {
