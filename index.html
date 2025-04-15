@@ -12,12 +12,10 @@
         <h1>Verifeye</h1>
         <form id="verify-form">
             <input type="text" name="username" placeholder="URL to privacy policy" required>
-            <input type="hidden" name="advanced" id="advanced-input" value="false">
-            <button type="submit">Verify</button>
+            <button type="submit">Check</button>
         </form>
     </div>
 
-    <!-- Advanced Toggle Button -->
     <div class="advanced-toggle">
         <label>
             <input type="checkbox" id="advanced-toggle-checkbox">
@@ -25,14 +23,9 @@
         </label>
     </div>
 
-    <script>
-        const checkbox = document.getElementById('advanced-toggle-checkbox');
-        const input = document.getElementById('advanced-input');
+    <div class="result-box"></div>
 
-        checkbox.addEventListener('change', () => {
-            input.value = checkbox.checked ? 'true' : 'false';
-        });
-    </script>
+    <script src="script.js"></script>
 
 </body>
 </html>
