@@ -6,16 +6,18 @@
 
 html, body {
     height: 100%;
+    width: 100%;
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    overflow-y: auto;
 }
 
 .container {
+    margin-top: 10vh;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 16px;
@@ -84,8 +86,9 @@ button:hover {
 }
 
 .result-box {
-    max-width: 700px;
-    margin: 2rem;
+    width: 90%;
+    max-width: 800px;
+    margin: 3rem auto;
     background: rgba(255, 255, 255, 0.06);
     border-radius: 16px;
     padding: 2rem;
@@ -96,6 +99,7 @@ button:hover {
     color: #ffffff;
     line-height: 1.6;
     text-align: left;
+    overflow-wrap: break-word;
 }
 
 .result-box h2 {
