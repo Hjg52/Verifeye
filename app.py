@@ -26,17 +26,20 @@ def generate_local_summary(content):
     for sentence in sentences:
         if any(keyword in sentence for keyword in keywords):
             clean_sentence = sentence.strip()
-            if 30 < len(clean_sentence) < 300:
+            if clean_sentence.endswith(('.', '!', '?')) and 30 < len(clean_sentence) < 300:
                 important_sentences.append(clean_sentence)
 
         if len(important_sentences) >= 5:
             break
 
     if not important_sentences:
-        return "No clear summary could be generated from this page."
+        return "<h3>📝 Summary of Policy:</h3><p>No clear summary could be generated from this page.</p>"
 
     summary = "<h3>📝 Summary of Policy:</h3><ul>"
     for s in important_sentences:
+        s = s[0].upper() + s[1:]  # Capitalize first letter
+        if not s.endswith('.'):
+            s += '.'
         summary += f"<li>{s}</li>\n"
     summary += "</ul>"
 
@@ -46,6 +49,7 @@ def generate_local_summary(content):
 def verify():
     data = request.get_json(force=True)
     url = data.get('url')
+    advanced = data.get('advanced', False)  # From frontend toggle
 
     if not url:
         return jsonify({"result": "❌ No URL provided."}), 400
@@ -54,7 +58,7 @@ def verify():
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
-        # Traffic Light Keywords
+        # Keyword detection for traffic light system
         keywords = [
             'privacy', 'gdpr', 'data collection', 'third-party',
             'cookies', 'tracking', 'opt-out', 'personal information',
@@ -84,7 +88,7 @@ def verify():
         if not findings:
             findings.append("ℹ️ No specific privacy practices detected, but some privacy-related terms were found.")
 
-        # Opt-Out Instructions Detection
+        # Opt-out instructions detection
         opt_out_instructions = None
         opt_out_patterns = [
             r'(you can opt out.*?\.{1,3})',
@@ -113,6 +117,7 @@ def verify():
         else:
             traffic_light = "🔴 High Data Collection / Tracking Detected"
 
+        # Build output
         output = f"""
 <h2>{traffic_light}</h2>
 
@@ -131,8 +136,8 @@ def verify():
 <p>{opt_out_instructions}</p>
 """
 
-        # Add Policy Summary
-        output += generate_local_summary(content)
+        if advanced:
+            output += generate_local_summary(content)
 
         output += f"""
 <p><strong>Total privacy-related keywords found:</strong> {keyword_mentions}</p>
