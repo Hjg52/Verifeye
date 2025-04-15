@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_from_directory
 import openai
 import requests
 import os
@@ -11,7 +11,11 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return send_file('index.html')
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:path>')
+def static_files(path):
+    return send_from_directory('.', path)
 
 @app.route('/verify', methods=['POST'])
 def verify():
@@ -29,20 +33,15 @@ def verify():
         if not any(keyword in content for keyword in ['privacy', 'gdpr', 'data collection', 'cookie', 'personal information']):
             return jsonify({"result": "⚠️ This doesn't appear to be a privacy policy page. Please check the URL."})
 
+        prompt = f"Summarize the main points of the privacy policy at {url}."
         if advanced:
             prompt = f"""
-            Analyze the following privacy policy found at {url}. Provide a detailed breakdown of:
+            Analyze the privacy policy found at {url}. Provide a detailed breakdown of:
             - What data is collected
-            - How the data is used
-            - Third-party sharing details
-            - Data retention policy
-            - User control options
-            Use clear, structured bullet points.
-            """
-        else:
-            prompt = f"""
-            Summarize the main points of the privacy policy found at {url} in 2-3 sentences.
-            Focus on what data is collected and how it's used.
+            - How it is used
+            - Third-party sharing
+            - Data retention
+            - User controls
             """
 
         completion = openai.ChatCompletion.create(
@@ -54,11 +53,10 @@ def verify():
         )
 
         result_text = completion.choices[0].message.content.strip()
-
         return jsonify({"result": result_text})
 
     except Exception as e:
-        return jsonify({"result": f"❌ Error processing request: {str(e)}"}), 500
+        return jsonify({"result": f"❌ Error: {str(e)}"}), 500
 
 
 if __name__ == '__main__':
