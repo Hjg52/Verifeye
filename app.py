@@ -24,7 +24,7 @@ def verify():
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
-        # Keywords for traffic light system
+        # Keywords for traffic light scoring
         keywords = [
             'privacy', 'gdpr', 'data collection', 'third-party',
             'cookies', 'tracking', 'opt-out', 'personal information',
@@ -44,17 +44,33 @@ def verify():
         if re.search(r'retain data for|store data for|keep.*data for', content):
             findings.append("🗄️ This site discusses how long your data is stored.")
 
-        if re.search(r'you can opt out|opt-out|opt out', content):
-            findings.append("🔓 There are options for users to opt-out or control data sharing.")
-
         if re.search(r'track.*location|location data', content):
             findings.append("📍 This site may track your location.")
 
         if re.search(r'cookies|tracking', content):
             findings.append("🍪 This site uses cookies or tracking technologies.")
 
+        if re.search(r'you can opt out|opt[- ]?out|to disable|manage your preferences', content):
+            findings.append("🔓 This site appears to offer opt-out options for users.")
+
         if not findings:
-            findings.append("ℹ️ No specific privacy practices detected, but keywords related to privacy were found.")
+            findings.append("ℹ️ No specific privacy practices detected, but some privacy-related terms were found.")
+
+        # Try to extract opt-out instructions
+        opt_out_instructions = None
+        opt_out_patterns = [
+            r'you can opt out.*?\.',
+            r'to opt[- ]?out.*?\.',
+            r'to disable.*?\.',
+            r'opt[- ]?out by.*?\.',
+            r'to manage your preferences.*?\.'
+        ]
+
+        for pattern in opt_out_patterns:
+            match = re.search(pattern, content)
+            if match:
+                opt_out_instructions = match.group(0).strip()
+                break
 
         # Traffic Light System
         if keyword_mentions < 10:
@@ -64,12 +80,28 @@ def verify():
         else:
             traffic_light = "🔴 High Data Collection / Tracking Detected"
 
-        output = f"{traffic_light}\n\nSummary of Detected Practices:\n\n"
+        # Build HTML output
+        output = f"""
+<h2>{traffic_light}</h2>
+
+<h3>🔍 Summary of Detected Practices:</h3>
+<ul>
+"""
 
         for finding in findings:
-            output += f"- {finding}\n"
+            output += f"<li>{finding}</li>\n"
 
-        output += f"\n(Detected {keyword_mentions} privacy-related term(s) overall for context.)"
+        output += "</ul>"
+
+        if opt_out_instructions:
+            output += f"""
+<h3>🔓 Opt-Out Instructions:</h3>
+<p>{opt_out_instructions}</p>
+"""
+
+        output += f"""
+<p><strong>Total privacy-related keywords found:</strong> {keyword_mentions}</p>
+"""
 
         return jsonify({"result": output})
 
