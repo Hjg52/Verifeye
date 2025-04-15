@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
 import requests
-from collections import Counter
 import re
 
 app = Flask(__name__)
@@ -25,7 +24,6 @@ def verify():
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
-        # Check for privacy keywords
         keywords = [
             'privacy', 'gdpr', 'data collection', 'third-party',
             'cookies', 'tracking', 'opt-out', 'personal information',
@@ -33,24 +31,35 @@ def verify():
         ]
 
         found_keywords = []
+        total_mentions = 0
 
         for word in keywords:
             count = len(re.findall(word, content))
             if count > 0:
                 found_keywords.append((word, count))
+                total_mentions += count
 
         if not found_keywords:
             return jsonify({"result": "⚠️ This doesn't appear to be a privacy policy page or contains very few privacy-related terms."})
 
         found_keywords.sort(key=lambda x: x[1], reverse=True)
 
-        summary = "🔍 Keyword Analysis:\n\n"
-        summary += "This page contains the following privacy-related terms:\n\n"
+        # Generate readable summary
+        summary = "🔍 Analysis Result:\n\n"
 
         for word, count in found_keywords:
-            summary += f"- {word}: {count} occurrence(s)\n"
+            summary += f"- The term '{word}' appears {count} time(s).\n"
 
-        return jsonify({"result": summary})
+        if total_mentions < 10:
+            traffic_light = "🟢 Low Data Collection Risk"
+        elif total_mentions < 30:
+            traffic_light = "🟡 Moderate Data Collection Risk"
+        else:
+            traffic_light = "🔴 High Data Collection / Tracking Detected"
+
+        final_output = f"{traffic_light}\n\nThis site mentions key privacy-related terms a total of {total_mentions} time(s).\n\n{summary}"
+
+        return jsonify({"result": final_output})
 
     except Exception as e:
         return jsonify({"result": f"❌ Error: {str(e)}"}), 500
