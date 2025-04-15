@@ -1,15 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory
-import openai
 import requests
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from collections import Counter
+import re
 
 app = Flask(__name__)
-
-# Use the updated OpenAI client (v1.x+)
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route('/')
 def home():
@@ -23,7 +17,6 @@ def static_files(path):
 def verify():
     data = request.get_json(force=True)
     url = data.get('url')
-    advanced = data.get('advanced', False)
 
     if not url:
         return jsonify({"result": "❌ No URL provided."}), 400
@@ -32,30 +25,32 @@ def verify():
         response = requests.get(url, timeout=5)
         content = response.text.lower()
 
-        if not any(keyword in content for keyword in ['privacy', 'gdpr', 'data collection', 'cookie', 'personal information']):
-            return jsonify({"result": "⚠️ This doesn't appear to be a privacy policy page. Please check the URL."})
+        # Check for privacy keywords
+        keywords = [
+            'privacy', 'gdpr', 'data collection', 'third-party',
+            'cookies', 'tracking', 'opt-out', 'personal information',
+            'data sharing', 'location', 'data retention', 'user data'
+        ]
 
-        prompt = f"Summarize the main points of the privacy policy at {url}."
-        if advanced:
-            prompt = f"""
-            Analyze the privacy policy found at {url}. Provide a detailed breakdown of:
-            - What data is collected
-            - How it is used
-            - Third-party sharing
-            - Data retention
-            - User controls
-            """
+        found_keywords = []
 
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a privacy policy analysis assistant."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        for word in keywords:
+            count = len(re.findall(word, content))
+            if count > 0:
+                found_keywords.append((word, count))
 
-        result_text = completion.choices[0].message.content.strip()
-        return jsonify({"result": result_text})
+        if not found_keywords:
+            return jsonify({"result": "⚠️ This doesn't appear to be a privacy policy page or contains very few privacy-related terms."})
+
+        found_keywords.sort(key=lambda x: x[1], reverse=True)
+
+        summary = "🔍 Keyword Analysis:\n\n"
+        summary += "This page contains the following privacy-related terms:\n\n"
+
+        for word, count in found_keywords:
+            summary += f"- {word}: {count} occurrence(s)\n"
+
+        return jsonify({"result": summary})
 
     except Exception as e:
         return jsonify({"result": f"❌ Error: {str(e)}"}), 500
